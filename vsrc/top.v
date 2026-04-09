@@ -1,12 +1,17 @@
 module top (
     input wire clk,
-    input wire rst_n
+    input wire rst_n,
+    output halt
 );//检查端口位数是否对齐，是否存在输入连输出、一输出多输入的情况
     wire GPRwena;
     wire [4:0] GPRrsel1, GPRrsel2, GPRwregsel;
     wire [31:0] GPRread1, GPRread2;
     reg [31:0] GPRdata_in; 
     
+    // for ebreak
+    wire is_break = (CUinst == 32'h00100073);
+    assign halt = is_break;
+
     always@(*)begin
         GPRdata_in = 0;
         case(GPRwsel)
