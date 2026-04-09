@@ -61,10 +61,12 @@ module CU(
                 alusel = 2'b10;
                 GPRwsel = 2'b11; //from mem
                 GPRwena = 1;
+                imm_out = {{20{inst[31]}}, inst[31:20]};
             end
             7'b0100011:begin //Sx(S-type)
                 alusel = 2'b10;
                 memwena = 1;
+                imm_out = {{20{inst[31]}}, inst[31:25], inst[11:7]};
             end
             7'b0010011:begin //I-type DONE
                 imm_out = {{20{inst[31]}}, inst[31:20]};

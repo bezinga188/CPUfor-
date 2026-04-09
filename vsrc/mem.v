@@ -33,7 +33,7 @@ module mem(
                 3'b010: begin
                     mem[addrin] <= datain;
                 end
-                default: mem[addrin] <= mem[addrin];
+                default:;
             endcase
         end
         else begin
@@ -43,11 +43,11 @@ module mem(
 
     always@(*) begin
         case(func3in)
-            3'b000 : dataout = {{24{mem[addrin][7+lb]}}, mem[addrin][lb[4:0] +: 8]};
-            3'b001 : dataout = {{16{mem[addrin][15+lh]}}, mem[addrin][lh[4:0] +: 16]};
-            3'b010 : dataout = mem[addrin];
-            3'b100 : dataout = {24'b0, mem[addrin][lb[4:0] +: 8]};
-            3'b101 : dataout = {16'b0, mem[addrin][lh[4:0] +: 16]};
+            3'b000 : dataout = {{24{mem[addrin][7+lb]}}, mem[addrin][lb[4:0] +: 8]}; //lb
+            3'b001 : dataout = {{16{mem[addrin][15+lh]}}, mem[addrin][lh[4:0] +: 16]}; //lh
+            3'b010 : dataout = mem[addrin]; //lw
+            3'b100 : dataout = {24'b0, mem[addrin][lb[4:0] +: 8]}; //lbu
+            3'b101 : dataout = {16'b0, mem[addrin][lh[4:0] +: 16]}; //lhu
             default: dataout = 0;
         endcase
     end

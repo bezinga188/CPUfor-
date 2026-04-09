@@ -39,7 +39,7 @@ module alu(
             rslt = (rs1 + in2) & (~1);
         end
 
-        else if (opcode==7'b100011)begin //分支指令
+        else if (opcode==7'b1100011)begin //分支指令
             case(sel)
                 3'b000 : bout = (rs1 == in2)? 32'b1:32'b0;
                 3'b001 : bout = (rs1 == in2)? 32'b0:32'b1;
