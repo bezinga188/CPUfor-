@@ -53,17 +53,17 @@ module CU(
                 imm_out = {{20{inst[31]}}, inst[31:20]};
             end
             7'b1100011:begin //b-type
-                aluinv = 1;
                 alusel = 2'b11;
                 btype = 1; //pcsel去top里写
+                imm_out = {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
             end
-            7'b0000011:begin //Lxx(I-type)
+            7'b0000011:begin //Lxx(I-type) DONE
                 alusel = 2'b10;
                 GPRwsel = 2'b11; //from mem
                 GPRwena = 1;
                 imm_out = {{20{inst[31]}}, inst[31:20]};
             end
-            7'b0100011:begin //Sx(S-type)
+            7'b0100011:begin //Sx(S-type) DONE
                 alusel = 2'b10;
                 memwena = 1;
                 imm_out = {{20{inst[31]}}, inst[31:25], inst[11:7]};
