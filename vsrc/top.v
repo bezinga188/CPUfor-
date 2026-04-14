@@ -1,43 +1,43 @@
 //创建define.v，声明宏定义，用来代替可能打错的二进制
 //`include define.v
 module top (
-    input wire clk,
-    input wire rst_n,
-    input [31:0] instin, prdata,
-    output [31:0] addr, paddr, pwdata,
+    input wire cpu_clk,
+    input wire cpu_rst,
+    input [31:0] irom_data, perip_rdata,
+    output [31:0] irom_addr, perip_addr, perip_wdata,
     output halt, 
-    output reg p_wen,
-    output [2:0] pmask
+    output reg perip_wen,
+    output [2:0] perip_mask
 );
     //链接外设
-    assign pmask = alufsel;
-    assign pwdata = GPRread2;
-    assign paddr = alurslt;
+    assign perip_mask = alufsel;
+    assign perip_wdata = GPRread2;
+    assign perip_addr = alurslt;
     wire [31:0] memdata_out;
-    assign memdata_out = prdata;
-    assign CUinst = instin;
+    assign memdata_out = perip_rdata;
+    assign CUinst = irom_data;
     wire pwen;
     //实现地址空间的写使能
     always@(*)begin
         if(pwen)begin
             if(alurslt[21:2]==20'h80008)begin//外设SEG
-                p_wen = 1;
+                perip_wen = 1;
             end
             else if(alurslt[21:2]==20'h80010)begin//LED
-                p_wen = 1;
+                perip_wen = 1;
             end
             else if(alurslt[21:2]==20'h80014)begin//couter
-                p_wen = 1;
+                perip_wen = 1;
             end
             else if(alurslt[20])begin//DRAM
-                p_wen = 1;
+                perip_wen = 1;
             end
             else begin//don't give a shit
-                p_wen = 0;
+                perip_wen = 0;
             end
         end
         else begin
-            p_wen = 0;
+            perip_wen = 0;
         end
     end
             
@@ -64,7 +64,7 @@ module top (
 
     reg PCsel; //btype, alurslt[0], j
     reg [31:0] PCjalrin, addrout;
-    assign addr = addrout;
+    assign irom_addr = addrout;
 
     /* verilator lint_off UNUSED */
     //pc跳转使能
@@ -105,8 +105,8 @@ module top (
         .imm_out(imm_out)
     );
 
-    GPR my_GPR(.clk(clk),
-        .rst(rst_n),
+    GPR my_GPR(.clk(cpu_clk),
+        .rst(cpu_rst),
         .Wena(GPRwena), 
         .Wsel(GPRwregsel), 
         .Rsel1(GPRrsel1), 
@@ -116,8 +116,8 @@ module top (
         .data_out2(GPRread2)
     );
 
-    PC my_PC(.clk(clk),
-        .rst(rst_n),
+    PC my_PC(.clk(cpu_clk),
+        .rst(cpu_rst),
         .sel(PCsel),
         .jalrin(PCjalrin),
         .addrout(addrout)
