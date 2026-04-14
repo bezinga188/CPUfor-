@@ -6,7 +6,7 @@ module PC(
 );
     always@(posedge clk)begin
         if(rst)begin
-            addrout <= 32'b0;
+            addrout <= 32'h80000000;
         end
         else if(sel)begin
             addrout <= jalrin;

@@ -1,8 +1,46 @@
+//创建define.v，声明宏定义，用来代替可能打错的二进制
+//`include define.v
 module top (
     input wire clk,
     input wire rst_n,
-    output halt
-);//检查端口位数是否对齐，是否存在输入连输出、一输出多输入的情况
+    input [31:0] instin, prdata,
+    output [31:0] addr, paddr, pwdata,
+    output halt, 
+    output reg p_wen,
+    output [2:0] pmask
+);
+    //链接外设
+    assign pmask = alufsel;
+    assign pwdata = GPRread2;
+    assign paddr = alurslt;
+    wire [31:0] memdata_out;
+    assign memdata_out = prdata;
+    assign CUinst = instin;
+    wire pwen;
+    //实现地址空间的写使能
+    always@(*)begin
+        if(pwen)begin
+            if(alurslt[21:2]==20'h80008)begin//外设SEG
+                p_wen = 1;
+            end
+            else if(alurslt[21:2]==20'h80010)begin//LED
+                p_wen = 1;
+            end
+            else if(alurslt[21:2]==20'h80014)begin//couter
+                p_wen = 1;
+            end
+            else if(alurslt[20])begin//DRAM
+                p_wen = 1;
+            end
+            else begin//don't give a shit
+                p_wen = 0;
+            end
+        end
+        else begin
+            p_wen = 0;
+        end
+    end
+            
     wire GPRwena;
     wire [4:0] GPRrsel1, GPRrsel2, GPRwregsel;
     wire [31:0] GPRread1, GPRread2;
@@ -12,6 +50,7 @@ module top (
     wire is_break = (CUinst == 32'h00100073);
     assign halt = is_break;
 
+    //GPR input select
     always@(*)begin
         GPRdata_in = 0;
         case(GPRwsel)
@@ -25,8 +64,10 @@ module top (
 
     reg PCsel; //btype, alurslt[0], j
     reg [31:0] PCjalrin, addrout;
+    assign addr = addrout;
 
     /* verilator lint_off UNUSED */
+    //pc跳转使能
     always@(*)begin
         if(btype && alubout[0] || j)begin
             PCsel = 1;
@@ -45,13 +86,6 @@ module top (
 
     wire [31:0] alurslt, alubout;
 
-    wire [31:0] memdata_in, memdata_out;
-    assign memdata_in = GPRread2;
-
-    wire [31:0] instout;
-
-    assign CUinst = instout;
-
     CU my_cu(
         .inst(CUinst),
         .GPRwena(GPRwena),
@@ -59,12 +93,11 @@ module top (
         .alusral(alusral),
         .btype(btype),
         .j(j),
-        .memwena(memwena),
+        .pwen(pwen),
         .alusel(alusel),
         .GPRwregsel(GPRwregsel),
         .GPRwsel(GPRwsel),
         .alufsel(alufsel),
-        .memsel(memsel),
         .GPRrsel1(GPRrsel1),
         .GPRsel2(GPRrsel2),
         .opcode(opcode),
@@ -103,15 +136,4 @@ module top (
         .bout(alubout)
     );
 
-    mem my_mem (.clk(clk),
-        .wena(memwena),
-        .func3in(memsel),
-        .addr(alurslt[15:0]),
-        .datain(memdata_in),
-        .dataout(memdata_out)
-    );
-
-    ireg my_ireg (.addr(addrout[13:0]),
-        .inst(instout)
-    );
 endmodule
