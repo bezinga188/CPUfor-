@@ -28,5 +28,5 @@ module GPR(
     //end
 
     assign data_out1 = (Rsel1 == 5'b0) ? 32'b0 : GPR[Rsel1];
-    assign data_out2 = (Rsel1 == 5'b0) ? 32'b0 : GPR[Rsel2];
+    assign data_out2 = (Rsel2 == 5'b0) ? 32'b0 : GPR[Rsel2];
 endmodule
